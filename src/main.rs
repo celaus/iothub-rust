@@ -6,16 +6,14 @@ extern crate serde_derive;
 mod config;
 
 use native_tls::{TlsConnector, TlsStream};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::net::TcpStream;
 use std::fs::File;
-// Specify client connection options
-use std::io::Cursor;
 use std::thread;
 use std::time::Duration;
-use mqtt::{Encodable, Decodable, QualityOfService};
+use mqtt::{Encodable, Decodable};
 use mqtt::packet::*;
-use mqtt::{TopicName, TopicFilter};
+use mqtt::{TopicName};
 use mqtt::control::variable_header::ConnectReturnCode;
 use clap::{Arg, App};
 use config::read_config;
@@ -52,7 +50,7 @@ fn publish(stream: &mut TlsStream<TcpStream>, msg: String, topic: TopicName) {
     let packet = PublishPacket::new(topic, QoSWithPacketIdentifier::Level1(10), msg);
     let mut buf = Vec::new();
     packet.encode(&mut buf).unwrap();
-    stream.write_all(&buf);
+    stream.write_all(&buf).unwrap();
 }
 
 fn main() {
@@ -68,23 +66,28 @@ fn main() {
                  .value_name("config.toml")
                  .takes_value(true))
         .get_matches();
-
     let config_filename = matches.value_of("config").unwrap_or("config.toml");
-    let mut f = File::open(config_filename).unwrap();
-
-    let settings = read_config(&mut f).unwrap();
+    let mut f = File::open(config_filename)
+        .expect(&format!("Can't open configuration file: {}", config_filename));
+    let settings = read_config(&mut f).expect("Can't read configuration file.");
     println!("Connecting to mqtts://{}", settings.mqtt.broker_address);
 
-    let topicName = TopicName::new(settings.mqtt.topic.clone()).unwrap();
+    let topic_name = TopicName::new(settings.mqtt.topic.clone()).unwrap();
 
-    let mut stream = connect(settings.mqtt.broker_address, settings.mqtt.username, settings.mqtt.password, settings.mqtt.client_id, settings.mqtt.broker);
+    let mut stream = connect(settings.mqtt.broker_address,
+                             settings.mqtt.username,
+                             settings.mqtt.password,
+                             settings.mqtt.client_id,
+                             settings.mqtt.broker);
 
     let mut i = 0;
     loop {
         i += 1;
         let msg = format!("{}", i);
-        println!("Sending message '{}' to topic: '{}'", msg, settings.mqtt.topic);
-        publish(&mut stream, msg, topicName.clone());
+        println!("Sending message '{}' to topic: '{}'",
+                 msg,
+                 settings.mqtt.topic);
+        publish(&mut stream, msg, topic_name.clone());
         thread::sleep(Duration::from_millis(3000));
     }
 }

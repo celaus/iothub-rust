@@ -1,7 +1,6 @@
 extern crate toml;
 extern crate serde;
 
-use std::fmt::Debug;
 use std::io;
 
 
@@ -29,6 +28,6 @@ pub struct MQTT {
 
 pub fn read_config<T: io::Read + Sized>(mut f: T) -> Result<Settings, ConfigError> {
     let mut buffer = String::new();
-    try!(f.read_to_string(&mut buffer).map_err(ConfigError::Io));
+    f.read_to_string(&mut buffer).map_err(ConfigError::Io)?;
     toml::from_str(&buffer).map_err(ConfigError::Parse)
 }
