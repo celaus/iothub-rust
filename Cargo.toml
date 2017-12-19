@@ -2,11 +2,14 @@
 name = "azure-mqtt"
 version = "0.1.0"
 authors = ["Claus Matzinger <claus.matzinger+kb@gmail.com>"]
+license = "MIT" 
+homepage = "blog.x5ff.xyz"
+readme = "README.md"
 
 [dependencies]
-mqtt-protocol = "*"
-native-tls = "*"
-clap = "*"
-toml = "*"
-serde = "*"
-serde_derive = "*"
+mqtt-protocol = "0.4.2"
+native-tls = "0.1"
+clap = "2.29"
+toml = "0.4.5"
+serde = "1.0.24"
+serde_derive = "1.0.24"
