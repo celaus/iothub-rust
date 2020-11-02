@@ -1,6 +1,3 @@
-extern crate mqtt;
-extern crate native_tls;
-extern crate clap;
 #[macro_use]
 extern crate serde_derive;
 mod config;
@@ -25,10 +22,10 @@ fn connect(broker: String,
            client_id: String,
            verify_name: String)
            -> TlsStream<TcpStream> {
-    let connector = TlsConnector::builder().unwrap().build().unwrap();
+    let connector = TlsConnector::builder().build().unwrap();
     let stream = TcpStream::connect(&broker).unwrap();
     let mut stream = connector.connect(&verify_name, stream).unwrap();
-    let mut conn = ConnectPacket::new("MQTT", client_id.as_ref());
+    let mut conn = ConnectPacket::new("MQTT", &client_id);
 
     conn.set_clean_session(true);
     conn.set_user_name(Some(username).to_owned());
